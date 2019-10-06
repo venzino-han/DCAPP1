@@ -71,18 +71,9 @@ export default function Setting(props) {
               completed: tf,
             }
           await props.setResults(pervResults =>[newResult, ...pervResults])
-
-          if(props.dailyFin >= props.dailyGoal ){
-            Alert.alert(
-              'Daily Goal Achived!',
-              'Good Job!',
-              [
-                {text: 'Confirm', style: "cancel"},
-            ]
-            )
           }
           
-    }
+  
       
     
     const finish = () => {
