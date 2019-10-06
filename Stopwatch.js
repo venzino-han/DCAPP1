@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, Text, View, Button, TouchableOpacity, AsyncStorage  }  from 'react-native';
+import { StyleSheet, Text, View, Button, TouchableOpacity, Alert, AsyncStorage  }  from 'react-native';
 import moment from 'moment';
 import Counter from './components/Counter'
 
@@ -26,18 +26,19 @@ export default function Setting(props) {
           </TouchableOpacity>
         )
       }
-    
+    const pad = (n) => n < 10 ? '0'+n : n
+
     function Timer({interval, style}){
-        const pad = (n) => n < 10 ? '0'+n : n
         const duration = moment.duration(interval)
         return <Text style = {style}>{pad(duration.hours())}:{pad(duration.minutes())}:{pad(duration.seconds())}</Text>
       }
     
     const [ running, setRunning ] = useState(0);
-    const [ start, setStart ] = useState(1);
-    const [ now, setNow ] = useState(0);
+    //const [ start, setStart ] = useState(1);
+    //const [ now, setNow ] = useState(0);
     const [ goal, setGoal ] = useState(props.tempGoal);
-    const [ result, setResult] = useState(0);
+    //const [ result, setResult] = useState(0);
+    const [runtime, setRuntime] = useState(0);
 
     const [   seconds, setSeconds, isActive, setIsActive, reset,] = Counter();
     
@@ -47,6 +48,7 @@ export default function Setting(props) {
     }
 
     const stopfunc = () => {
+        setRuntime(seconds)      
         setIsActive(false);
         setRunning(2);
       }  
@@ -55,54 +57,84 @@ export default function Setting(props) {
         setRunning(1);
         setIsActive(true);
         }
-      
-    const finish = async (runtime) => {
-        const today = new Date();
-        const time = today.getHours() + ":" + today.getMinutes() + ":" + today.getSeconds();
-        const date = today.getFullYear()+ "-" +(today.getMonth()+1)+ "-" +today.getDate();
-        const newResult = {
-            id: today,
-            day: date,
-            time: time,
-            runtime: runtime,
-            completed: false,
+    
+    const savingResult = async () =>{
+      const today = new Date();
+          const time = pad(today.getHours()) + ":" + pad(today.getMinutes()) + ":" + pad(today.getSeconds());
+          const date = pad(today.getFullYear())+ "-" +pad(today.getMonth()+1)+ "-" +pad(today.getDate());
+          const tf = (goal-seconds) <10 ? true : false 
+          const newResult = {
+              id: today,
+              day: date,
+              time: time,
+              runtime: seconds,
+              completed: tf,
+            }
+          await props.setResults(pervResults =>[newResult, ...pervResults])
+
+          if(props.dailyFin >= props.dailyGoal ){
+            Alert.alert(
+              'Daily Goal Achived!',
+              'Good Job!',
+              [
+                {text: 'Confirm', style: "cancel"},
+            ]
+            )
           }
-        await props.setResults(pervResults =>[newResult, ...pervResults])        
+          
+    }
+      
+    
+    const finish = () => {
+        // 저장 조건 추가 최소 1-5분 이상 (일단은 5초 이상으로)
+        if(runtime>5000){
+          savingResult();
+        }else{
+          alert("Less then 5min will not be saved!")
+        }
         props.gotoPage('Home')
     }
-    
 
-    if((goal- seconds)<10){
-        props.gotoPage('Home')
+    if((goal- seconds) <5 && running !== 3){
+        setRuntime(seconds)
+        console.log('runtime   :   ' + runtime)
+        setRunning(3);
+        setIsActive(false);
+        savingResult();
     }
 
     view = (
         <View style={ 
             running === 0 ? styles.container_stoped :
             running === 1 ? styles.container_running:
-            styles.container_stoped
+            running === 2 ? styles.container_stoped:
+            styles.container_Finish
         }>
         <View style={{ flex: 3,}} >
-            <View style={{ flex: 1}}>
-                <Button
-                title = 'Back'
-                onPress = {()=> {
-                    props.gotoPage('Home')
-                }}
-                ></Button>
-            </View>
-            <View style={{ flex: 3, flexDirection:"row"}}>
-                <Timer interval={goal-seconds} style={styles.timer} />
+            <View style={{ flex: 3, alignItems: 'center',justifyContent: 'center'}}>
+              { running !==3 &&(<Timer interval={goal-seconds} style={styles.timer} />)}
+              { running ===3 &&(<View>
+              <Text style={{fontSize:18}}>Focus time finished.</Text>
+              <Text style={{fontSize:18}}>Good Job!</Text>
+              </View>
+              )}  
             </View>
         </View>
-        <Text style={{color:'#FFFFFF'}}> {running} </Text>
+        {/* running 상태 표시  */}
+        {/* <Text style={{color:'#FFFFFF'}}> {running} </Text> */}
         <View style={{ flex: 1, }} >
         <View style={{flexDirection: "row", justifyContent: 'space-between',}} > 
             {   running === 0 && (
-                <RoundButton 
-                title='Start' color='#FFFFFF' background='#004B8D' 
-                onPress={ startfunc }
-                />)}
+                <View style={{flexDirection:'row' }} >
+                  <RoundButton 
+                  title='Start' color='#FFFFFF' background='#004B8D' 
+                  onPress={ startfunc }
+                  />
+                  <RoundButton 
+                    title='Back' color='#FFFFFF' background='#004B8D' 
+                    onPress={()=>{props.gotoPage('Home')
+                    }}/>
+                </View>)}
             {   running === 1 && (
                 <RoundButton 
                 title='Stop' color='#2D2926' background='white' 
@@ -122,14 +154,19 @@ export default function Setting(props) {
                     }}/>
                 </View>
                 )}
+              {   
+              running === 3 && (
+              <RoundButton 
+                    title='Finish' color='#FFF' background='#2D2926' 
+                    onPress={()=>{
+                      props.gotoPage('Home');
+                      console.log("timer : " + (runtime))
+                    }}/>)
+              }
         </View>
         </View>
     </View>
     )  
-
-    
-    
-
     return (
             <View style={styles.container}>
                 {view}
@@ -179,7 +216,7 @@ export default function Setting(props) {
       borderRadius: 40,
       justifyContent: 'center',
       alignItems: 'center',
-      marginHorizontal : 40,
+      marginHorizontal : 20,
       marginTop: 1,
     },
     buttonTitle: {

@@ -1,5 +1,5 @@
 import React, {useState, useEffect} from 'react';
-import { StyleSheet, Text, View, AsyncStorage } from 'react-native';
+import { StyleSheet, Text,Alert, View, AsyncStorage } from 'react-native';
 import Home from './Home';
 import Setting from './Setting';
 import Stopwatch from './Stopwatch';
@@ -7,18 +7,15 @@ import List from './List';
 
 
 export default function App() {
-  const[dailyGoal,setDailyGoal] = useState(60*1000*140);
+  const[dailyGoal,setDailyGoal] = useState(60*1000*180);
   const [page, setPage] = useState('Home');
   const [results, setResults] = useState([]);
   const [tempGoal, setTempgoal] = useState(10000);
-  const [dailyFin, setDailyFin] = useState(10000);
+  const [dailyFin, setDailyFin] = useState(0);
+  const [monthlyFin, setMonthlyFin] = useState(0);
+  const [success, setSuccess] = useState(0);
 
-  
-  function runtime_sum(log_list) {
-    total = 0
-    log_list.map(item => total = total + item.runtime )
-    return total
-  }
+  const pad = (n) => n < 10 ? '0'+n : n
 
   // 초기화 , 로컬에 daily goal 존재 시, 호출 구현
   useEffect(()=>{
@@ -45,7 +42,23 @@ export default function App() {
   // clearAsyncStorage();
 
   // 결과 리스트 불러 오기
+  
+  useEffect(()=>{
+    //Daily 목표 달성 시,
+    if (dailyFin > dailyGoal ){
+      setSuccess(1)
+      Alert.alert(
+        'Daily Goal Achived!',
+        'Good Job!',
+        [{text: 'Confirm', style: "cancel"},])
+    }else{
+      setSuccess(0)
+    }
+    
+    },[dailyFin, dailyGoal])  
+
   useEffect( ()=>{
+    //이전 결과 불러오기
     check= async ()=>{
       const storedResult= await AsyncStorage.getItem("results")
     if(storedResult != null){
@@ -56,31 +69,41 @@ export default function App() {
     }
     } 
     check();
-    
-
-    // AsyncStorage.getItem("results").then( (savedResults) =>{
-    //   if( typeof savedResults == 'object'){
-    //     console.log("we dont hav result, init...")
-    //   }
-    //   else if(JSON.parse(savedResults) !== results){
-    //     // console.log(typeof JSON.parse(savedResults))
-    //     // console.log(typeof results)
-    //     // console.log(JSON.parse(savedResults))
-    //     // console.log(results)
-    //     console.log("we have reult " + JSON.parse(savedResults).length )
-    //     setResults(JSON.parse(savedResults))
-    //   }
-    // })
     },[])  
 
   //결과 리스트 즉시 갱신 구현
   useEffect(()=>{
+    // 새 결과 저장
     save = async()=>{
       await AsyncStorage.setItem("results", JSON.stringify(results))
       const savedResult = await AsyncStorage.getItem("results")
       console.log("sw results :    "+ JSON.stringify(savedResult))
     }
     save();
+    //일일 total 결과 갱신
+    const today = new Date();
+    const date = pad(today.getFullYear())+ "-" +pad(today.getMonth()+1)+ "-" +pad(today.getDate());
+    const todayResult = results.filter(item => {return item.day === date })
+    const dailySum = todayResult.reduce((acc,item)=>{
+      return acc + item.runtime
+    },0)
+    console.log(date)
+    console.log("dailySum:     "+dailySum)
+    setDailyFin(dailySum)
+
+    //월간 total 결과 갱신
+    const month =  String(pad(today.getFullYear())) + String(pad(today.getMonth()+1))
+    console.log(month)
+
+    const thisMonthResult = results.filter(item => {
+      const itemMonth = item.day.split('-')[0]+item.day.split('-')[1]
+      return  itemMonth === month })
+    const monthlySum = thisMonthResult.reduce((acc,item)=>{
+      return acc + item.runtime
+    },0)
+    console.log("monthlySum:     "+monthlySum)
+    setMonthlyFin(monthlySum)
+
   },[results])
   
 
@@ -102,6 +125,8 @@ export default function App() {
     gotoPage={gotoPage} 
     setTempgoal={setTempgoal}
     dailyFin={dailyFin}
+    success={success}
+    setSuccess={setSuccess}
     />;
   }
 
@@ -119,6 +144,8 @@ export default function App() {
     tempGoal ={tempGoal}
     results = {results}
     setResults = {setResults}
+    dailyFin={dailyFin}
+    dailyGoal={dailyGoal}
     />;
   }
 
@@ -126,6 +153,9 @@ export default function App() {
     content = <List
     gotoPage={gotoPage}
     results = {results}
+    setResults = {setResults}
+    dailyFin = {dailyFin}
+    monthlyFin = {monthlyFin}
     />;
   }
 

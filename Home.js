@@ -30,14 +30,18 @@ export default function Home(props) {
             <Button
             color='#211f1e'
             onPress={()=>{ props.gotoPage('List')} } 
-            title = "List"
+            title = "Recodes"
             />
         </View>
-        <View style ={{flex:2}}>
+        <View style ={{flex:2, alignItems: 'center'}}>
+            <Text style ={{ color: 'white'}}> Today Focus Time</Text>
             <Timer  interval={props.dailyFin} style={styles.timer} />
+            <View style={styles.screen}>
+                { props.success == 1 &&(<Text style={{fontSize: 20, color:'#FFF'}}>Daily Goal Achived!</Text>)}
+            </View>
         </View>
         <View style={styles.basicview}>
-                <Text>Select Focus Time</Text>
+                <Text style ={{ color: 'white'}}>Select Focus Time</Text>
                 <View style={styles.btngroup} >
                     <BasicButton
                     title={'60'} 
@@ -61,7 +65,7 @@ export default function Home(props) {
                     color ={'white'}
                     onPress={()=>{
                         props.gotoPage('StopWatch');
-                        props.setTempgoal(5000);
+                        props.setTempgoal(6000);
                     }}/>
                 </View>
         </View>
