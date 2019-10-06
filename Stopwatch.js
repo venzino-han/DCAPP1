@@ -78,7 +78,7 @@ export default function Setting(props) {
     
     const finish = () => {
         // 저장 조건 추가 최소 1-5분 이상 (일단은 5초 이상으로)
-        if(runtime>5000){
+        if(runtime>60000*5){
           savingResult();
         }else{
           alert("Less then 5min will not be saved!")
