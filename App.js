@@ -47,10 +47,10 @@ export default function App() {
     //Daily 목표 달성 시,
     if (dailyFin > dailyGoal ){
       setSuccess(1)
-      Alert.alert(
-        'Daily Goal Achived!',
-        'Good Job!',
-        [{text: 'Confirm', style: "cancel"},])
+      // Alert.alert(
+      //   'Daily Goal Achived!',
+      //   'Good Job!',
+      //   [{text: 'Confirm', style: "cancel"},])
     }else{
       setSuccess(0)
     }

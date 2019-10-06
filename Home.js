@@ -49,7 +49,7 @@ export default function Home(props) {
                     color ={'white'}
                     onPress={()=>{
                         props.gotoPage('StopWatch');
-                        props.setTempgoal(60000);
+                        props.setTempgoal(60000*60);
                         }}/>
                     <BasicButton
                     title={'45'}
@@ -57,7 +57,7 @@ export default function Home(props) {
                     color ={'white'} 
                     onPress={()=>{
                         props.gotoPage('StopWatch');
-                        props.setTempgoal(45000);
+                        props.setTempgoal(45000*60);
                         }}/>
                     <BasicButton
                     title={'30'} 
@@ -65,7 +65,7 @@ export default function Home(props) {
                     color ={'white'}
                     onPress={()=>{
                         props.gotoPage('StopWatch');
-                        props.setTempgoal(6000);
+                        props.setTempgoal(30000*60);
                     }}/>
                 </View>
         </View>
