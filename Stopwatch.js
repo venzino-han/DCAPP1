@@ -1,7 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, Text, View, Button, TouchableOpacity, Alert, AsyncStorage  }  from 'react-native';
+import { StyleSheet, Text, View, TouchableOpacity, AppState}  from 'react-native';
 import moment from 'moment';
 import Counter from './components/Counter'
+
+import { useKeepAwake } from 'expo-keep-awake';
+
+
 
 export default function Setting(props) {
 
@@ -34,15 +38,18 @@ export default function Setting(props) {
       }
     
     const [ running, setRunning ] = useState(0);
-    //const [ start, setStart ] = useState(1);
-    //const [ now, setNow ] = useState(0);
     const [ goal, setGoal ] = useState(props.tempGoal);
-    //const [ result, setResult] = useState(0);
     const [runtime, setRuntime] = useState(0);
+    //const [appState, setAppState] = useState(AppState.currentState);
 
     const [   seconds, setSeconds, isActive, setIsActive, reset,] = Counter();
-    
-     const startfunc = () =>{
+
+    // console.log(appState)
+    // if( appState !== 'active'){
+    //   stopfunc();
+    // }
+
+    const startfunc = () =>{
         setRunning(1)
         setIsActive(true);
     }
@@ -73,8 +80,6 @@ export default function Setting(props) {
           await props.setResults(pervResults =>[newResult, ...pervResults])
           }
           
-  
-      
     
     const finish = () => {
         // 저장 조건 추가 최소 1-5분 이상 (일단은 5초 이상으로)
@@ -93,6 +98,8 @@ export default function Setting(props) {
         setIsActive(false);
         savingResult();
     }
+
+    useKeepAwake();
 
     view = (
         <View style={ 
@@ -127,10 +134,13 @@ export default function Setting(props) {
                     }}/>
                 </View>)}
             {   running === 1 && (
+              <View onTouchStart={stopfunc} >
                 <RoundButton 
                 title='Stop' color='#2D2926' background='white' 
                 onPress={stopfunc}
-                />)}
+                />
+              </View>
+                )}
             {   running === 2 && (
                 <View style={{flexDirection:'row' }} >
                 <RoundButton 
@@ -147,12 +157,15 @@ export default function Setting(props) {
                 )}
               {   
               running === 3 && (
+              <View>
               <RoundButton 
                     title='Finish' color='#FFF' background='#2D2926' 
                     onPress={()=>{
                       props.gotoPage('Home');
                       console.log("timer : " + (runtime))
-                    }}/>)
+                    }}/>
+                    
+                    </View>)
               }
         </View>
         </View>

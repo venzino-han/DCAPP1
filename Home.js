@@ -44,20 +44,20 @@ export default function Home(props) {
                 <Text style ={{ color: 'white'}}>Select Focus Time</Text>
                 <View style={styles.btngroup} >
                     <BasicButton
-                    title={'60'} 
+                    title={'90'} 
                     background={'#004B8D'}
                     color ={'white'}
                     onPress={()=>{
                         props.gotoPage('StopWatch');
-                        props.setTempgoal(60000*60);
+                        props.setTempgoal(90000*60);
                         }}/>
                     <BasicButton
-                    title={'45'}
+                    title={'60'}
                     background={'#004B8D'}
                     color ={'white'} 
                     onPress={()=>{
                         props.gotoPage('StopWatch');
-                        props.setTempgoal(45000*60);
+                        props.setTempgoal(60000*60);
                         }}/>
                     <BasicButton
                     title={'30'} 
